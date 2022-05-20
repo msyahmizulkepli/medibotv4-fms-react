@@ -7,6 +7,7 @@ class Home extends Component {
 		return (
 				<div>
                     <h1 className="text-center mt-3">Robot Control Page</h1>
+					<Connection/>
 				</div>
 		);
 	}
