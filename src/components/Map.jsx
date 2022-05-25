@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import {Row, Col, Form, Button, ButtonGroup, ListGroup, FloatingLabel, Modal, Alert} from "react-bootstrap";
 import { IoNavigate, IoCloseCircleOutline, IoLocation, IoRemoveOutline, IoAddOutline, IoCaretBack, IoCaretForward, IoCaretUp, IoCaretDown, IoNavigateOutline, IoSaveOutline, IoTrashOutline } from "react-icons/io5";
 import Config from "../scripts/config";
+import Teleoperation from "./Teleoperation";
 window.navigation = false;
 window.homing = false;
 
@@ -68,13 +69,13 @@ class Map extends Component {
 	}
 
     view_map(){
-		// eslint-disable-next-line
+
 		this.state.viewer = new window.ROS2D.Viewer({
 			divID: "nav_div",
 			width: 640,
 			height: 480,
 		});
-		// eslint-disable-next-line
+
 		var navClient1 = new window.NAV2D.OccupancyGridClientNav({
 			ros: this.state.ros,
 			rootObject: this.state.viewer.scene,
@@ -98,17 +99,6 @@ class Map extends Component {
 		// 	withOrientation: true,
 		// 	continuous: true,
 		// });
-
-		// eslint-disable-next-line
-		// var imageMapClientNav = new NAV2D.ImageMapClientNav({
-	 //        ros: this.state.ros,
-	 //        viewer: this.state.viewer,
-	 //        rootObject: this.state.viewer.scene,
-	 //        serverName: '/move_base',
-	 //        image: `/static/{value}.png`
-	 //    });
-	 //    imageMapClientNav.addImg();
-	 //    imageMapClientNav.removeImg();
 	}
 
     navigation(){
@@ -293,6 +283,9 @@ class Map extends Component {
                                     </ButtonGroup>	
                                 </h5>
                             </Row>
+							<Row>
+								<Teleoperation/>
+							</Row>
                     </ListGroup.Item>
 				</div>
 		);
