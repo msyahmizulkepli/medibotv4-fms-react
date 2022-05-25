@@ -62,6 +62,9 @@ NAV2D.Navigator = function(options) {
     var ros = options.ros;
     var serverName = options.serverName || '/move_base';
     var actionName = options.actionName || 'move_base_msgs/MoveBaseAction';
+    var robot_pose = options.robot_pose || '/robot_pose';
+    var initial_pose = options.initial_pose || '/initialpose';
+    var plan = options.plan || '/move_base/NavfnROS/plan';
     var withOrientation = options.withOrientation || true;
     this.rootObject = options.rootObject || new createjs.Container();
 
@@ -75,7 +78,7 @@ NAV2D.Navigator = function(options) {
     function homefunc(pose) {
         var robot = new ROSLIB.Topic({
             ros: ros,
-            name: '/initialpose',
+            name: initial_pose,
             messageType: 'geometry_msgs/PoseWithCovarianceStamped'
         });
 
@@ -112,7 +115,7 @@ NAV2D.Navigator = function(options) {
 
 
         var goalMarker = new ROS2D.NavigationArrow({
-            size: 15,
+            size: 7.5,
             strokeSize: 1,
             strokeColor : createjs.Graphics.getRGB(0, 0, 0),
             fillColor: createjs.Graphics.getRGB(0, 64, 255, 0.5),
@@ -146,7 +149,7 @@ NAV2D.Navigator = function(options) {
 
     // marker for the robot
     var robotMarker = new ROS2D.NavigationArrow({
-    size : 10,
+    size : 7.5,
     strokeSize : 1,
     strokeColor : createjs.Graphics.getRGB(0, 0, 0),
     fillColor : createjs.Graphics.getRGB(255, 128, 0, 1.0),
@@ -169,7 +172,7 @@ NAV2D.Navigator = function(options) {
     // setup a listener for the robot pose
     var poseListener = new ROSLIB.Topic({
         ros: ros,
-        name: '/robot_pose',
+        name: robot_pose,
         messageType: 'geometry_msgs/Pose',
         throttle_rate: 1
     });
@@ -206,7 +209,7 @@ NAV2D.Navigator = function(options) {
 
         pathTopic = new ROSLIB.Topic({
             ros: ros,
-            name: '/move_base/NavfnROS/plan',
+            name: plan,
             messageType: 'nav_msgs/Path'
         });
 
@@ -390,6 +393,9 @@ NAV2D.OccupancyGridClientNav = function(options) {
     var continuous = options.continuous;
     this.serverName = options.serverName || '/move_base';
     this.actionName = options.actionName || 'move_base_msgs/MoveBaseAction';
+    var robot_pose = options.robot_pose || '/robot_pose';
+    var initial_pose = options.initial_pose || '/initialpose';
+    var plan = options.plan || '/move_base/NavfnROS/plan';
     this.rootObject = options.rootObject || new createjs.Container();
     this.viewer = options.viewer;
     this.withOrientation = options.withOrientation || true;
@@ -409,6 +415,9 @@ NAV2D.OccupancyGridClientNav = function(options) {
             serverName: that.serverName,
             actionName: that.actionName,
             rootObject: that.rootObject,
+            robot_pose: robot_pose,
+            initial_pose: initial_pose,
+            plan: plan,
             withOrientation: that.withOrientation
         });
 
