@@ -10,7 +10,7 @@ class Teleoperation extends Component {
 		key_teleop : true,
 		key_teleop_obj : null,
 		joy_teleop : false,
-        robot_namespace : 1
+        robot_teleop : 1
 	};
 
 	constructor(){
@@ -68,7 +68,7 @@ class Teleoperation extends Component {
 
 	initTeleopKeyboard() {
 	    if (this.state.key_teleop_obj == null){
-            switch(this.state.robot_namespace){
+            switch(this.state.robot_teleop){
                 case 1: {
                     this.state.key_teleop_obj = new window.KEYBOARDTELEOP.Teleop({
                         ros: this.state.ros,
@@ -93,7 +93,7 @@ class Teleoperation extends Component {
 		console.log("handle move");
 		//create a ROS publisher to /cmd_vel
         var cmd_vel;
-		switch(this.state.robot_namespace){
+		switch(this.state.robot_teleop){
             case 1:{
                 cmd_vel = new window.ROSLIB.Topic({
                     ros: this.state.ros,
@@ -127,14 +127,14 @@ class Teleoperation extends Component {
 		});
 		//publish the message to /cmd_vel
 		cmd_vel.publish(twist);	
-        console.log(this.state.robot_namespace.toString()+" is moving")				
+        console.log(this.state.robot_teleop.toString()+" is moving")				
 	}
 
 	handleStop(event){
 		console.log("handle stop");
 		//create a ROS publisher to /cmd_vel
 		var cmd_vel;
-		switch(this.state.robot_namespace){
+		switch(this.state.robot_teleop){
             case 1:{
                 cmd_vel = new window.ROSLIB.Topic({
                     ros: this.state.ros,
@@ -176,11 +176,11 @@ class Teleoperation extends Component {
 			<div>
                 <Row>
                     <Col align="center">
-                        <ToggleButtonGroup type="radio" name="robot_ns" onChange={(value)=>{this.setState({robot_namespace: value}); console.log(value)}}>
-                            <ToggleButton id="robot1" value={1} variant="outline-info">
+                        <ToggleButtonGroup type="radio" name="robot_teleop_btn" onChange={(value)=>{this.setState({robot_teleop: value}); console.log(value)}}>
+                            <ToggleButton id="robot1_teleop_btn" value={1} variant="outline-info">
                                 Robot 1
                             </ToggleButton>
-                            <ToggleButton id="robot2" value={2} variant="outline-danger">
+                            <ToggleButton id="robot2_teleop_btn" value={2} variant="outline-danger">
                                 Robot 2
                             </ToggleButton>
                         </ToggleButtonGroup>

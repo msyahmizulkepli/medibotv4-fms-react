@@ -428,4 +428,128 @@ NAV2D.OccupancyGridClientNav = function(options) {
 
 };
 
-
+NAV2D.OccupancyGridClientNav2 = function(options) {
+    var that = this;
+    options = options || {};
+    this.ros = options.ros;
+    var topic = options.topic || '/map';
+    var continuous = options.continuous;
+    var robot1Namespace = options.robot1Namespace || '/robot1';
+    var robot2Namespace = options.robot2Namespace || '/robot2';
+    this.serverName = options.serverName || '/move_base';
+    this.actionName = options.actionName || 'move_base_msgs/MoveBaseAction';
+    var robot_pose = options.robot_pose || '/robot_pose';
+    var initial_pose = options.initial_pose || '/initialpose';
+    var plan = options.plan || '/move_base/NavfnROS/plan';
+    this.rootObject = options.rootObject || new createjs.Container();
+    this.viewer = options.viewer;
+    this.withOrientation = options.withOrientation || true;
+    this.navigator = null;
+  
+    // setup a client to get the map
+    var client = new ROS2D.OccupancyGridClient({
+        ros: this.ros,
+        rootObject: this.rootObject,
+        continuous: continuous,
+        topic: topic
+    });
+    client.on('change', function() {
+        // scale the viewer to fit the map
+        that.viewer.scaleToDimensions(client.currentGrid.width, client.currentGrid.height);
+        that.viewer.shift(client.currentGrid.pose.position.x, client.currentGrid.pose.position.y);
+    });
+  
+    // get a handle to the stage
+    var stage;
+  
+    if (that.rootObject instanceof createjs.Stage) {
+        stage = that.rootObject;
+    } else {
+        stage = that.rootObject.getStage();
+    }
+      // marker for robot1
+    var robotMarker1 = new ROS2D.NavigationArrow({
+        size : 2.5,
+        strokeSize : 0.5,
+        strokeColor : createjs.Graphics.getRGB(0, 0, 0),
+        fillColor : createjs.Graphics.getRGB(255, 0, 0, 1.0),
+        pulse : true
+    });
+  
+    //marker for robot2
+    var robotMarker2 = new ROS2D.NavigationArrow({
+        size : 2.5,
+        strokeSize : 0.5,
+        strokeColor : createjs.Graphics.getRGB(0, 0, 0),
+        fillColor : createjs.Graphics.getRGB(0, 0, 255, 1.0),
+        pulse : true
+    });
+  
+    //wait for a pose to come in first
+    robotMarker1.visible = false;
+    robotMarker2.visible = false;
+  
+    count=count+1
+    if (count ==1 || robotvisible == true){
+        that.rootObject.addChild(robotMarker1);
+        that.rootObject.addChild(robotMarker2);
+        robotvisible=false;
+    }
+  
+    var initScaleSet1 = false;
+  
+    // setup a listener for the robot1 pose
+    var poseListener1 = new ROSLIB.Topic({
+        ros: that.ros,
+        name: robot1Namespace+robot_pose,
+        messageType: 'geometry_msgs/Pose',
+        throttle_rate: 1
+    });
+  
+    poseListener1.subscribe(function(pose) {
+        // update the robot1 position on the map
+        robotMarker1.x = pose.position.x;
+        robotMarker1.y = -pose.position.y;
+  
+        if (!initScaleSet1){
+            robotMarker1.scaleX = 1.0 / stage.scaleX;
+            robotMarker1.scaleY = 1.0 / stage.scaleY;
+            initScaleSet1 = true;
+        }
+  
+        // change the angle
+        robotMarker1.rotation = stage.rosQuaternionToGlobalTheta(pose.orientation);
+  
+        robotMarker1.visible = true;
+    });
+  
+    var initScaleSet2 = false;
+  
+    // setup a listener for the robot pose
+    var poseListener2 = new ROSLIB.Topic({
+        ros: that.ros,
+        name: robot2Namespace+robot_pose,
+        messageType: 'geometry_msgs/Pose',
+        throttle_rate: 1
+    });
+  
+    poseListener2.subscribe(function(pose) {
+        // update the robots position on the map
+        robotMarker2.x = pose.position.x;
+        robotMarker2.y = -pose.position.y;
+  
+        if (!initScaleSet2){
+            robotMarker2.scaleX = 1.0 / stage.scaleX;
+            robotMarker2.scaleY = 1.0 / stage.scaleY;
+            initScaleSet2 = true;
+        }
+  
+        // change the angle
+        robotMarker2.rotation = stage.rosQuaternionToGlobalTheta(pose.orientation);
+  
+        robotMarker2.visible = true;
+    });
+  
+  
+ };
+ 

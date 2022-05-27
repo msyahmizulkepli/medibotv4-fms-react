@@ -311,47 +311,38 @@ class RobotState extends Component {
                                 <h3 className="text-center">Robot 1</h3>
                             </Row>
 							<Row>
-								<Col>
+								<Col align="center">
 									<h4 className="mt-4">Velocity</h4>
 									<p className="m-0">Linear&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {this.state.linear_velocity1.toFixed(2)}</p>
 									<p className="m-0">Angular : {this.state.angular_velocity1.toFixed(2)}</p>
-								</Col>&emsp;&emsp;&emsp;
-								<Col>
+								</Col>
+								<Col align="center">
 									<h4 className="mt-4">Position</h4>
 									<p className="m-0">x : {this.state.x1.toFixed(2)}</p>
 									<p className="m-0">y : {this.state.y1.toFixed(2)}</p>
 									<p className="m-0">θ : {this.state.orientation1.toFixed(0)}</p>
 								</Col>
-								<Col>
-									<h4 className="mt-4">Encoder</h4>
-									<p className="m-0">Left Count : {this.state.lwheel1.toFixed(0)}</p>
-									<p className="m-0">Right Count : {this.state.rwheel1.toFixed(0)}</p>
-								</Col>
 							</Row>
 							<br/>
 						</ListGroup.Item>
                         <ListGroupItem variant="dark">
-                        <Row>
+                        	<Row>
                                 <h3 className="text-center">Robot 2</h3>
                             </Row>
                             <Row>
-								<Col>
+								<Col align="center">
 									<h4 className="mt-4">Velocity</h4>
 									<p className="m-0">Linear&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: {this.state.linear_velocity2.toFixed(2)}</p>
 									<p className="m-0">Angular : {this.state.angular_velocity2.toFixed(2)}</p>
-								</Col>&emsp;&emsp;&emsp;
-								<Col>
+								</Col>
+								<Col align="center">
 									<h4 className="mt-4">Position</h4>
 									<p className="m-0">x : {this.state.x2.toFixed(2)}</p>
 									<p className="m-0">y : {this.state.y2.toFixed(2)}</p>
 									<p className="m-0">θ : {this.state.orientation2.toFixed(0)}</p>
 								</Col>
-								<Col>
-									<h4 className="mt-4">Encoder</h4>
-									<p className="m-0">Left Count : {this.state.lwheel2.toFixed(0)}</p>
-									<p className="m-0">Right Count : {this.state.rwheel2.toFixed(0)}</p>
-								</Col>
 							</Row>
+							<br/>
                         </ListGroupItem>
 				</ListGroup>
 			</div>
