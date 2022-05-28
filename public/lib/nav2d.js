@@ -472,7 +472,7 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
         size : 2.5,
         strokeSize : 0.5,
         strokeColor : createjs.Graphics.getRGB(0, 0, 0),
-        fillColor : createjs.Graphics.getRGB(255, 0, 0, 1.0),
+        fillColor : createjs.Graphics.getRGB(0, 0, 255, 1.0),
         pulse : true
     });
   
@@ -481,7 +481,7 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
         size : 2.5,
         strokeSize : 0.5,
         strokeColor : createjs.Graphics.getRGB(0, 0, 0),
-        fillColor : createjs.Graphics.getRGB(0, 0, 255, 1.0),
+        fillColor : createjs.Graphics.getRGB(255, 0, 0, 1.0),
         pulse : true
     });
   
