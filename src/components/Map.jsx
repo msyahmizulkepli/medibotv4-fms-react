@@ -5,6 +5,7 @@ import Config from "../scripts/config";
 import Teleoperation from "./Teleoperation";
 window.navigation = false;
 window.homing = false;
+window.navoption = 1;
 
 class Map extends Component {
     state = {
@@ -332,7 +333,7 @@ class Map extends Component {
 									<h5>NAVIGATION</h5><br></br><br></br>
 									<Row>
 										<Col align="center">
-											<ToggleButtonGroup type="radio" name="robot_nav_btn" onChange={(value)=>{this.setState({robot_nav: value}); console.log(value)}}>
+											<ToggleButtonGroup type="radio" name="robot_nav_btn" onChange={(value)=>{this.setState({robot_nav: value}); window.navoption = value;}}>
 												<ToggleButton id="auto_nav_btn" value={0} variant="outline-primary">
 												&nbsp;&nbsp;Auto&nbsp;&nbsp;
 												</ToggleButton>

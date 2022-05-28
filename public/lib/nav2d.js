@@ -458,7 +458,145 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
         that.viewer.scaleToDimensions(client.currentGrid.width, client.currentGrid.height);
         that.viewer.shift(client.currentGrid.pose.position.x, client.currentGrid.pose.position.y);
     });
-  
+    
+    // setup the actionlib client for robot1
+     var actionClient1 = new ROSLIB.ActionClient({
+        ros: this.ros,
+        actionName: this.actionName,
+        serverName: robot1Namespace+this.serverName
+    });
+
+    // setup the actionlib client for robot2
+    var actionClient2 = new ROSLIB.ActionClient({
+        ros: this.ros,
+        actionName: this.actionName,
+        serverName: robot2Namespace+this.serverName
+    });
+    
+    // pose estimate for robot1
+    function homefunc1(pose) {
+        var robot1 = new ROSLIB.Topic({
+            ros: this.ros,
+            name: robot1Namespace+initial_pose,
+            messageType: 'geometry_msgs/PoseWithCovarianceStamped'
+        });
+
+        var posee = new ROSLIB.Message({ header: { frame_id: "map" }, pose: { pose: { position: { x: pose.position.x, y: pose.position.y, z: 0.0 }, orientation: { z: pose.orientation.z, w: pose.orientation.w } }, covariance: [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853891945200942] } });
+        robot1.publish(posee);
+        homing = false;
+        navigation = false;
+
+    }
+
+    // pose estimate for robot2
+    function homefunc2(pose) {
+        var robot2 = new ROSLIB.Topic({
+            ros: this.ros,
+            name: robot2Namespace+initial_pose,
+            messageType: 'geometry_msgs/PoseWithCovarianceStamped'
+        });
+
+        var posee = new ROSLIB.Message({ header: { frame_id: "map" }, pose: { pose: { position: { x: pose.position.x, y: pose.position.y, z: 0.0 }, orientation: { z: pose.orientation.z, w: pose.orientation.w } }, covariance: [0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.06853891945200942] } });
+        robot2.publish(posee);
+        homing = false;
+        navigation = false;
+
+    }
+
+    /**
+     * Send a goal to the navigation stack with the given pose.
+     *
+     * @param pose - the goal pose
+     */
+    // send goal to robot1
+     function sendGoal1(pose) {
+        
+        var goal1 = new ROSLIB.Goal({
+            actionClient: actionClient1,
+            goalMessage: {
+                target_pose: {
+                    header: {
+                        frame_id: 'map'
+                    },
+                    pose: pose
+                }
+            }
+        });
+
+        goal1.send();
+
+
+
+        var goalMarker1 = new ROS2D.NavigationArrow({
+            size: 7.5,
+            strokeSize: 1,
+            strokeColor : createjs.Graphics.getRGB(0, 0, 0),
+            fillColor: createjs.Graphics.getRGB(0, 64, 255, 0.5),
+            pulse: false
+        });
+
+        goalMarker1.x = pose.position.x;
+        goalMarker1.y = -pose.position.y;
+        goalMarker1.rotation = stage.rosQuaternionToGlobalTheta(pose.orientation);
+        goalMarker1.scaleX = 1.0 / stage.scaleX;
+        goalMarker1.scaleY = 1.0 / stage.scaleY;
+        that.rootObject.addChild(goalMarker1);
+
+        goal1.on('result', function() {
+            that.rootObject.removeChild(goalMarker1);
+            that.rootObject.removeChild(orientationMarker1);
+            navigation = false;
+
+        });
+    }
+
+    /**
+     * Send a goal to the navigation stack with the given pose.
+     *
+     * @param pose - the goal pose
+     */
+    // send goal to robot2
+    function sendGoal2(pose) {
+        
+        var goal2 = new ROSLIB.Goal({
+            actionClient: actionClient2,
+            goalMessage: {
+                target_pose: {
+                    header: {
+                        frame_id: 'map'
+                    },
+                    pose: pose
+                }
+            }
+        });
+
+        goal2.send();
+
+
+
+        var goalMarker2 = new ROS2D.NavigationArrow({
+            size: 7.5,
+            strokeSize: 1,
+            strokeColor : createjs.Graphics.getRGB(0, 0, 0),
+            fillColor: createjs.Graphics.getRGB(0, 64, 255, 0.5),
+            pulse: false
+        });
+
+        goalMarker2.x = pose.position.x;
+        goalMarker2.y = -pose.position.y;
+        goalMarker2.rotation = stage.rosQuaternionToGlobalTheta(pose.orientation);
+        goalMarker2.scaleX = 1.0 / stage.scaleX;
+        goalMarker2.scaleY = 1.0 / stage.scaleY;
+        that.rootObject.addChild(goalMarker2);
+
+        goal2.on('result', function() {
+            that.rootObject.removeChild(goalMarker2);
+            that.rootObject.removeChild(orientationMarker2);
+            navigation = false;
+
+        });
+    }
+
     // get a handle to the stage
     var stage;
   
@@ -548,6 +686,167 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
         robotMarker2.rotation = stage.rosQuaternionToGlobalTheta(pose.orientation);
   
         robotMarker2.visible = true;
+    });
+
+    var position = null;
+    var positionVec3 = null;
+    var thetaRadians = 0;
+    var thetaDegrees = 0;
+    var orientationMarker = null;
+    var mouseDown = false;
+    var xDelta = 0;
+    var yDelta = 0;
+    var panflag = true;
+
+    var pannavfunction = function(event, mouseState) {
+        // label:
+        if (navigation == true || homing == true) {
+
+            if (mouseState === 'down') {
+                // get position when mouse button is pressed down
+                position = stage.globalToRos(event.stageX, event.stageY);
+                positionVec3 = new ROSLIB.Vector3(position);
+                mouseDown = true;
+            } else if (mouseState === 'move') {
+                // remove obsolete orientation marker
+                that.rootObject.removeChild(orientationMarker);
+
+                if (mouseDown === true) {
+
+                    // if mouse button is held down:
+                    // - get current mouse position
+                    // - calulate direction between stored <position> and current position
+                    // - place orientation marker
+                    var currentPos = stage.globalToRos(event.stageX, event.stageY);
+                    var currentPosVec3 = new ROSLIB.Vector3(currentPos);
+
+                    orientationMarker = new ROS2D.NavigationArrow({
+                        size: 15,
+                        strokeSize: 1,
+                        strokeColor : createjs.Graphics.getRGB(0, 0, 0),
+                        fillColor: createjs.Graphics.getRGB(0, 64, 255, 0.5),
+                        pulse: false
+                    });
+
+                    xDelta = currentPosVec3.x - positionVec3.x;
+                    yDelta = currentPosVec3.y - positionVec3.y;
+
+                    thetaRadians = Math.atan2(xDelta, yDelta);
+
+                    thetaDegrees = thetaRadians * (180.0 / Math.PI);
+
+                    if (thetaDegrees >= 0 && thetaDegrees <= 180) {
+                        thetaDegrees += 270;
+                    } else {
+                        thetaDegrees -= 90;
+                    }
+
+                    orientationMarker.x = positionVec3.x;
+                    orientationMarker.y = -positionVec3.y;
+                    orientationMarker.rotation = thetaDegrees;
+                    orientationMarker.scaleX = 1.0 / stage.scaleX;
+                    orientationMarker.scaleY = 1.0 / stage.scaleY;
+                        that.rootObject.addChild(orientationMarker);
+                    
+                
+            }} else if (mouseDown) { // mouseState === 'up'
+                // if mouse button is released
+                // - get current mouse position (goalPos)
+                // - calulate direction between stored <position> and goal position
+                // - set pose with orientation
+                // - send goal
+                mouseDown = false;
+
+
+                var goalPos = stage.globalToRos(event.stageX, event.stageY);
+
+                var goalPosVec3 = new ROSLIB.Vector3(goalPos);
+
+                xDelta = goalPosVec3.x - positionVec3.x;
+                yDelta = goalPosVec3.y - positionVec3.y;
+
+                thetaRadians = Math.atan2(xDelta, yDelta);
+
+                if (thetaRadians >= 0 && thetaRadians <= Math.PI) {
+                    thetaRadians += (3 * Math.PI / 2);
+                } else {
+                    thetaRadians -= (Math.PI / 2);
+                }
+
+                var qz = Math.sin(-thetaRadians / 2.0);
+                var qw = Math.cos(-thetaRadians / 2.0);
+
+                var orientation = new ROSLIB.Quaternion({
+                    x: 0,
+                    y: 0,
+                    z: qz,
+                    w: qw
+                });
+
+                var pose = new ROSLIB.Pose({
+                    position: positionVec3,
+                    orientation: orientation
+                });
+                // send the goal
+                if (navigation == true) {
+                    if (navoption == 1) {
+                        sendGoal1(pose);
+                    }
+                    if (navoption == 2) {
+                        sendGoal2(pose);
+                    }
+                }
+                if (homing == true) {
+                    if (navoption == 1) {
+                        sendGoal1(pose);
+                    }
+                    if (navoption == 2) {
+                        sendGoal2(pose);
+                    }
+                }
+
+                navigation = false;
+
+            }
+        }
+
+         
+        if (!homing && !navigation) {
+
+
+            if (mouseState === 'down' && typeof pane === "function") {
+
+                pane(event.stageX, event.stageY);
+
+                panflag = true;
+            } else if (mouseState === 'up') {
+                // console.log("hi up here");
+                panflag = false;
+
+            } else if (mouseState === 'move' && typeof pane === "function") {
+
+                mouseDown = false;
+                that.rootObject.removeChild(orientationMarker);
+
+                if (panflag) {
+                    paned(event.stageX, event.stageY);
+                }
+            }
+        }
+       
+    };
+
+    this.rootObject.addEventListener('stagemousedown', function(event) {
+        pannavfunction(event, 'down');
+        that.rootObject.addEventListener('stagemousemove', function(event) {
+            pannavfunction(event, 'move');
+
+        });
+
+    });
+
+    this.rootObject.addEventListener('stagemouseup', function(event) {
+        pannavfunction(event, 'up');
     });
   
   
