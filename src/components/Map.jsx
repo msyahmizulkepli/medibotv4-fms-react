@@ -145,26 +145,31 @@ class Map extends Component {
 		}catch(error){
 			console.error("window.navigation or window.homing problem");
 		}
-		// stop robot1
-		var move_base_stop1 = new window.ROSLIB.Topic({
-	        ros: this.state.ros,
-	        name: Config.ROBOT1_NAMESPACE+'/move_base/cancel',
-	        messageType: 'actionlib_msgs/GoalID'
-	    });
-	    var move_base_stop_msg1 = new window.ROSLIB.Message({
-	        id: ''
-	    });
-	    move_base_stop1.publish(move_base_stop_msg1);
-		// stop robot2
-		var move_base_stop2 = new window.ROSLIB.Topic({
-	        ros: this.state.ros,
-	        name: Config.ROBOT2_NAMESPACE+'/move_base/cancel',
-	        messageType: 'actionlib_msgs/GoalID'
-	    });
-	    var move_base_stop_msg2 = new window.ROSLIB.Message({
-	        id: ''
-	    });
-	    move_base_stop2.publish(move_base_stop_msg2);
+		if (this.state.robot_nav == 1) {
+			// stop robot1
+			var move_base_stop1 = new window.ROSLIB.Topic({
+				ros: this.state.ros,
+				name: Config.ROBOT1_NAMESPACE+'/move_base/cancel',
+				messageType: 'actionlib_msgs/GoalID'
+			});
+			var move_base_stop_msg1 = new window.ROSLIB.Message({
+				id: ''
+			});
+			move_base_stop1.publish(move_base_stop_msg1);
+		}
+		if (this.state.robot_nav == 2) {
+			// stop robot2
+			var move_base_stop2 = new window.ROSLIB.Topic({
+				ros: this.state.ros,
+				name: Config.ROBOT2_NAMESPACE+'/move_base/cancel',
+				messageType: 'actionlib_msgs/GoalID'
+			});
+			var move_base_stop_msg2 = new window.ROSLIB.Message({
+				id: ''
+			});
+			move_base_stop2.publish(move_base_stop_msg2);
+		}
+		
 	    this.hidePath(true);
 	}
 
