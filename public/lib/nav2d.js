@@ -503,6 +503,38 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
 
     }
 
+    // send goal to nearest robot
+    function taskAssign(pose) {
+        var nav_goal = new ROSLIB.Topic({
+            ros: this.ros,
+            name: '/nav_goal',
+            messageType: 'geometry_msgs/PoseStamped'
+        });
+        var posee = new ROSLIB.Message({ 
+            header: { 
+                frame_id: "map" 
+            }, 
+            pose: {
+                position: pose
+            }
+        });
+        nav_goal.publish(posee);
+        
+        var serviceClient = new ROSLIB.Service({
+            ros : this.ros,
+            name : '/medibotv4/task_assign',
+            serviceType : 'std_srvs/Trigger'
+        });
+        
+        var request = new ROSLIB.ServiceRequest({});
+
+        serviceClient.callService(request, function(result) {
+            console.log(result.success);
+            console.log(result.message);
+        });
+
+    }
+
     /**
      * Send a goal to the navigation stack with the given pose.
      *
@@ -541,10 +573,10 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
         goalMarker1.scaleX = 1.0 / stage.scaleX;
         goalMarker1.scaleY = 1.0 / stage.scaleY;
         that.rootObject.addChild(goalMarker1);
+        that.rootObject.removeChild(orientationMarker);
 
         goal1.on('result', function() {
             that.rootObject.removeChild(goalMarker1);
-            that.rootObject.removeChild(orientationMarker1);
             navigation = false;
 
         });
@@ -588,10 +620,10 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
         goalMarker2.scaleX = 1.0 / stage.scaleX;
         goalMarker2.scaleY = 1.0 / stage.scaleY;
         that.rootObject.addChild(goalMarker2);
+        that.rootObject.removeChild(orientationMarker);
 
         goal2.on('result', function() {
             that.rootObject.removeChild(goalMarker2);
-            that.rootObject.removeChild(orientationMarker2);
             navigation = false;
 
         });
@@ -789,6 +821,9 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
                 });
                 // send the goal
                 if (navigation == true) {
+                    if (navoption == 0) {
+                        taskAssign(pose);
+                    }
                     if (navoption == 1) {
                         sendGoal1(pose);
                     }
@@ -798,10 +833,10 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
                 }
                 if (homing == true) {
                     if (navoption == 1) {
-                        sendGoal1(pose);
+                        homefunc1(pose);
                     }
                     if (navoption == 2) {
-                        sendGoal2(pose);
+                        homefunc2(pose);
                     }
                 }
 
