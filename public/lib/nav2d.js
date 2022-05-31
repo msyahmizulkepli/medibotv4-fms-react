@@ -448,7 +448,7 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
   
     // setup a client to get the map
     var client = new ROS2D.OccupancyGridClient({
-        ros: this.ros,
+        ros: that.ros,
         rootObject: this.rootObject,
         continuous: continuous,
         topic: topic
@@ -461,14 +461,14 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
     
     // setup the actionlib client for robot1
      var actionClient1 = new ROSLIB.ActionClient({
-        ros: this.ros,
+        ros: that.ros,
         actionName: this.actionName,
         serverName: robot1Namespace+this.serverName
     });
 
     // setup the actionlib client for robot2
     var actionClient2 = new ROSLIB.ActionClient({
-        ros: this.ros,
+        ros: that.ros,
         actionName: this.actionName,
         serverName: robot2Namespace+this.serverName
     });
@@ -476,7 +476,7 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
     // pose estimate for robot1
     function homefunc1(pose) {
         var robot1 = new ROSLIB.Topic({
-            ros: this.ros,
+            ros: that.ros,
             name: robot1Namespace+initial_pose,
             messageType: 'geometry_msgs/PoseWithCovarianceStamped'
         });
@@ -491,7 +491,7 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
     // pose estimate for robot2
     function homefunc2(pose) {
         var robot2 = new ROSLIB.Topic({
-            ros: this.ros,
+            ros: that.ros,
             name: robot2Namespace+initial_pose,
             messageType: 'geometry_msgs/PoseWithCovarianceStamped'
         });
@@ -506,7 +506,7 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
     // send goal to nearest robot
     function taskAssign(pose) {
         var nav_goal = new ROSLIB.Topic({
-            ros: this.ros,
+            ros: that.ros,
             name: '/nav_goal',
             messageType: 'geometry_msgs/PoseStamped'
         });
@@ -514,14 +514,12 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
             header: { 
                 frame_id: "map" 
             }, 
-            pose: {
-                position: pose
-            }
+            pose: pose
         });
         nav_goal.publish(posee);
         
         var serviceClient = new ROSLIB.Service({
-            ros : this.ros,
+            ros : that.ros,
             name : '/medibotv4/task_assign',
             serviceType : 'std_srvs/Trigger'
         });
@@ -530,7 +528,14 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
 
         serviceClient.callService(request, function(result) {
             console.log(result.success);
-            console.log(result.message);
+            if(result.message == "robot1"){
+                sendGoal1(pose);
+                console.log("robot1 is nearer... assigning task to robot1");
+            }
+            if(result.message == "robot2"){
+                sendGoal2(pose);
+                console.log("robot2 is nearer... assigning task to robot2");
+            }
         });
 
     }

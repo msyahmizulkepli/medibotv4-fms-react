@@ -20,7 +20,8 @@ class Map extends Component {
 		pathTopic2:null,
 		label:[],
 		show_set_spot:false,
-		goal_status:{message: "Doing nothing. Waiting for goal...",variant: "info",show:true}
+		goal_status1:{message: "Doing nothing. Waiting for goal...",variant: "info",show:true},
+		goal_status2:{message: "Doing nothing. Waiting for goal...",variant: "info",show:true}
     };
 
     constructor(){
@@ -88,30 +89,6 @@ class Map extends Component {
 			continuous: true,
 		});
  
-
-		// var navClient1 = new window.NAV2D.OccupancyGridClientNav({
-		// 	ros: this.state.ros,
-		// 	rootObject: this.state.viewer.scene,
-		// 	viewer: this.state.viewer,
-		// 	serverName: Config.ROBOT1_NAMESPACE+"/move_base",
-		// 	robot_pose: Config.ROBOT1_NAMESPACE+"/robot_pose",
-		// 	initial_pose: Config.ROBOT1_NAMESPACE+"/initialpose",
-		// 	plan: Config.ROBOT1_NAMESPACE+"/move_base/NavfnROS/plan",
-		// 	withOrientation: true,
-		// 	continuous: true,
-		// });
-
-		// var navClient2 = new window.NAV2D.OccupancyGridClientNav({
-		// 	ros: this.state.ros,
-		// 	rootObject: this.state.viewer.scene,
-		// 	viewer: this.state.viewer,
-		// 	serverName: Config.ROBOT2_NAMESPACE+"/move_base",
-        //     robot_pose: Config.ROBOT2_NAMESPACE+"/robot_pose",
-		// 	initial_pose: Config.ROBOT2_NAMESPACE+"/initialpose",
-    	// 	plan: Config.ROBOT2_NAMESPACE+"/move_base/NavfnROS/plan",
-		// 	withOrientation: true,
-		// 	continuous: true,
-		// });
 	}
 
     navigation(){
@@ -123,6 +100,10 @@ class Map extends Component {
 			window.homing = false;
 		}catch(error){
 			console.error("window.navigation or window.homing problem");
+		}
+		if(window.navoption == 0){
+			setTimeout(() => {this.hidePath();}, 5000);
+			setTimeout(() => {this.showPath();}, 5000);
 		}
 	}
 
@@ -156,6 +137,8 @@ class Map extends Component {
 				id: ''
 			});
 			move_base_stop1.publish(move_base_stop_msg1);
+			this.state.viewer.scene.removeChild(this.state.pathView1);
+			this.hidePath1(true);
 		}
 		if (this.state.robot_nav == 2) {
 			// stop robot2
@@ -168,9 +151,10 @@ class Map extends Component {
 				id: ''
 			});
 			move_base_stop2.publish(move_base_stop_msg2);
+			this.state.viewer.scene.removeChild(this.state.pathView2);
+			this.hidePath2(true);
 		}
 		
-	    this.hidePath(true);
 	}
 
 	showPath(){
@@ -227,21 +211,33 @@ class Map extends Component {
 		}
 	}
 
-	hidePath(isStopping=false){
+	hidePath(){
+		this.hidePath1();
+		this.hidePath2();
+	}
+
+	hidePath1(isStopping=false){
 		if(!isStopping){
 			this.setState({show_path:false});
 		}
 		
         this.state.viewer.scene.removeChild(this.state.pathView1);
-		this.state.viewer.scene.removeChild(this.state.pathView2);
         if (this.state.pathTopic1) {
             this.state.pathTopic1.unsubscribe();
         }
+        this.setState({pathView1:null});
+        this.setState({pathTopic1:null});
+	}
+
+	hidePath2(isStopping=false){
+		if(!isStopping){
+			this.setState({show_path:false});
+		}
+		
+		this.state.viewer.scene.removeChild(this.state.pathView2);
 		if (this.state.pathTopic2) {
 			this.state.pathTopic2.unsubscribe();
 		}
-        this.setState({pathView1:null});
-        this.setState({pathTopic1:null});
 		this.setState({pathView2:null});
         this.setState({pathTopic2:null});
 	}
