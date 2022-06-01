@@ -72,6 +72,7 @@ class Map extends Component {
 		this.init_connection();
 		this.view_map();
 		this.showPath();
+		this.getGoalStatus();
 	}
 
     view_map(){
@@ -297,6 +298,70 @@ class Map extends Component {
         pan.startPan(250, 250);
         pan.pan(300,250);
     }
+
+	getGoalStatus(){
+		// robot1 status
+		var goal_status_sub1 = new window.ROSLIB.Topic({
+			ros : this.state.ros,
+			name : Config.ROBOT1_NAMESPACE+'/move_base/status',
+			messageType : 'actionlib_msgs/GoalStatusArray'
+		});
+		goal_status_sub1.subscribe((message)=>{
+			var i;
+			for(i=0; i<message.status_list.length; i++){
+				if(message.status_list[i].status === 1){
+					this.setState({goal_status1:{message:"Goal received. Moving there...",variant:"warning",status:true}});
+				}
+			}			
+		});
+
+		var goal_result_sub1 = new window.ROSLIB.Topic({
+			ros : this.state.ros,
+			name : Config.ROBOT1_NAMESPACE+'/move_base/result',
+			messageType : 'move_base_msgs/MoveBaseActionResult'
+		});
+		goal_result_sub1.subscribe((message)=>{
+			if(message.status.status === 2){
+				this.setState({goal_status1:{message:"Goal canceled.",variant:"danger",status:true}});
+			}
+			else if(message.status.status === 3){
+				this.setState({goal_status1:{message:"Goal reached successfully.",variant:"success",status:true}});
+				this.hidePath1(true);
+			}	
+			setTimeout(() => {this.setState({goal_status1:{message:"Doing nothing. Waiting for goal...",variant:"info",status:true}});}, 5000);
+		});
+
+		// robot2 status
+		var goal_status_sub2 = new window.ROSLIB.Topic({
+			ros : this.state.ros,
+			name : Config.ROBOT2_NAMESPACE+'/move_base/status',
+			messageType : 'actionlib_msgs/GoalStatusArray'
+		});
+		goal_status_sub2.subscribe((message)=>{
+			var i;
+			for(i=0; i<message.status_list.length; i++){
+				if(message.status_list[i].status === 1){
+					this.setState({goal_status2:{message:"Goal received. Moving there...",variant:"warning",status:true}});
+				}
+			}			
+		});
+
+		var goal_result_sub2 = new window.ROSLIB.Topic({
+			ros : this.state.ros,
+			name : Config.ROBOT2_NAMESPACE+'/move_base/result',
+			messageType : 'move_base_msgs/MoveBaseActionResult'
+		});
+		goal_result_sub2.subscribe((message)=>{
+			if(message.status.status === 2){
+				this.setState({goal_status2:{message:"Goal canceled.",variant:"danger",status:true}});
+			}
+			else if(message.status.status === 3){
+				this.setState({goal_status2:{message:"Goal reached successfully.",variant:"success",status:true}});
+				this.hidePath2(true);
+			}	
+			setTimeout(() => {this.setState({goal_status2:{message:"Doing nothing. Waiting for goal...",variant:"info",status:true}});}, 5000);
+		});
+	}
 
 	render() {
 		return (
