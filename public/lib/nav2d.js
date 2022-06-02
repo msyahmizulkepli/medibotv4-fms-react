@@ -536,6 +536,10 @@ NAV2D.OccupancyGridClientNav2 = function(options) {
                 sendGoal2(pose);
                 console.log("robot2 is nearer... assigning task to robot2");
             }
+            if(result.message == "none"){
+                that.rootObject.removeChild(orientationMarker);
+                console.log("both robots are busy... please wait for robot to complete task or cancel robot task manually");
+            }
         });
 
     }
