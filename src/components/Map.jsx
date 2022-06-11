@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import {Row, Col, Form, Button, ButtonGroup, ListGroup, ToggleButton, ToggleButtonGroup, FloatingLabel, Modal, Alert} from "react-bootstrap";
 import { IoNavigate, IoCloseCircleOutline, IoLocation, IoRemoveOutline, IoAddOutline, IoCaretBack, IoCaretForward, IoCaretUp, IoCaretDown, IoNavigateOutline, IoSaveOutline, IoTrashOutline } from "react-icons/io5";
+import { VscClearAll } from "react-icons/vsc";
 import Config from "../scripts/config";
 import Teleoperation from "./Teleoperation";
 window.navigation = false;
@@ -18,6 +19,7 @@ class Map extends Component {
 		pathTopic1:null,
 		pathView2:null,
 		pathTopic2:null,
+		task: [],
 		label:[],
 		show_set_spot:false,
 		goal_status1:{message: "Doing nothing. Waiting for goal...",variant: "info",show:true},
@@ -29,6 +31,9 @@ class Map extends Component {
 		this.view_map = this.view_map.bind(this);
 		this.showPath = this.showPath.bind(this);
 		this.hidePath = this.hidePath.bind(this);
+		this.getSpot = this.getSpot.bind(this);
+		this.setSpot = this.setSpot.bind(this);
+		this.sendGoal = this.sendGoal.bind(this);
 	}
 
     init_connection(){
@@ -73,6 +78,7 @@ class Map extends Component {
 		this.view_map();
 		this.showPath();
 		this.getGoalStatus();
+		this.getSpot();
 	}
 
     view_map(){
@@ -363,6 +369,88 @@ class Map extends Component {
 		});
 	}
 
+	getSpot(){
+		var get_spot = new window.ROSLIB.Service({
+			ros : this.state.ros,
+			name : '/spots/get_spot',
+			serviceType : 'medibotv4/GetSpot'
+		});
+
+		var request = new window.ROSLIB.ServiceRequest({});
+		var i, temp_label=[];
+		get_spot.callService(request, function(result) {
+			for(i=0; i<result.label.length; i++){
+				temp_label.push(result.label[i].toString());
+			}
+		});
+		setTimeout(() => {
+			this.setState({ label: []});
+			this.setState({ label: this.state.label.concat(temp_label)});
+		}, 500);
+    }
+
+    sendGoal(){
+    	console.log(this.refs.select_spot_form_ref.value);
+
+
+    	var send_goal = new window.ROSLIB.Service({
+			ros : this.state.ros,
+			name : '/spots/send_goal',
+			serviceType : 'medibotv4/SendGoal'
+		});
+
+		var request = new window.ROSLIB.ServiceRequest({
+			label: this.refs.select_spot_form_ref.value
+		});
+
+		send_goal.callService(request, function(result) {
+			console.log(result.success);
+			console.log(result.message);
+		});
+
+		setTimeout(() => {
+			if(this.state.pathView==null && this.state.pathTopic==null && this.state.show_path){
+				this.showPath();
+			}
+		}, 100);	
+    }
+
+    setSpot(act){
+    	var temp_label;
+    	if(act === 'add'){
+    		temp_label = this.refs.set_spot_form_ref.value;
+    	}
+    	else if(act === 'remove'){
+			temp_label = this.refs.select_spot_form_ref.value;
+    	}
+    	else if(act === 'clear'){
+    		temp_label = '';
+    	}
+
+    	var set_spot = new window.ROSLIB.Service({
+			ros : this.state.ros,
+			name : '/spots/set_spot',
+			serviceType : 'medibotv4/SetSpot'
+		});
+
+		var request = new window.ROSLIB.ServiceRequest({
+			action: act, //add remove or clear
+			label: temp_label
+		});
+
+		set_spot.callService(request, function(result) {
+			console.log(result.success);
+			console.log(result.message);
+		});	
+
+		setTimeout(() => {
+			this.getSpot();
+			if(act === 'add'){
+    			this.setState({show_set_spot:!this.state.show_set_spot});
+    		}
+		}, 500);
+    }
+
 	render() {
 		return (
 				<div>
@@ -432,6 +520,24 @@ class Map extends Component {
 									</Col><Col></Col><Col></Col>
 								</Row>
 								<hr></hr><br></br>
+								{/* <Row align="center">
+                                    <h5>TASK ASSIGNMENT</h5><br></br><br></br>
+                                    <Form size="md">    
+                                        <FloatingLabel label="Select a spot" size="xs">
+                                            <Form.Control as="select" ref="select_spot_form_ref" size="xs" onClick={()=>{if(this.refs.select_spot_form_ref.value===""){this.getSpot();}}}>
+                                                {this.state.label.map((x) => (<option key={x} value={x}>{x}</option>))}
+                                            </Form.Control>
+                                        </FloatingLabel>
+                                        <p></p>
+                                        <ButtonGroup className="gap-1">
+                                            <Button onClick={()=>{this.sendGoal()}} variant="secondary">GOTO <IoNavigateOutline/></Button>
+                                            <Button onClick={()=>{this.setState({show_set_spot:!this.state.show_set_spot});}} variant="secondary">SAVE <IoSaveOutline/></Button>
+                                            <Button onClick={()=>{this.setSpot("remove")}} variant="secondary">REMOVE <IoTrashOutline/></Button>
+                                            <Button onClick={()=>{this.setSpot("clear")}} variant="secondary">CLEAR ALL <VscClearAll/></Button>
+                                        </ButtonGroup>						 	
+                                    </Form>
+                                </Row>
+								<hr></hr><br></br>	 */}
 								<Row align="center">
 									<h5>TELEOPERATION</h5><br></br><br></br>
 									<Teleoperation/>
