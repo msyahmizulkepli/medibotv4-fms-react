@@ -1,5 +1,5 @@
 const Config = {
-	ROSBRIDGE_SERVER_IP : "192.168.0.103" ,//window.location.hostname,
+	ROSBRIDGE_SERVER_IP : "172.20.10.2" ,//window.location.hostname,
 	ROSBRIDGE_SERVER_PORT : "9090",
 	RECONNECTION_TIMER : 200,
     ROBOT1_NAMESPACE: "/robot1",
